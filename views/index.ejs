@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Chat</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+        $( document ).ready( function(){
+            console.log("00a");
+            var socket = io.connect();
+            var name = prompt( "What is your name?");
+            if( name ){
+                console.log("00b");
+                socket.emit( "user_joined", name )
+                document.getElementById( "message_label" ).innerHTML = name + ":";
+            }
+            $( "form" ).submit( function(e){
+                console.log("00c");
+                socket.emit( "message", {
+                    name: name,
+                    message: $( "#message" ).val()
+                } ),
+                e.preventDefault();
+                console.log("00d");
+            })
+            socket.on( "new_message", function( data, users_dict ){
+                console.log("00e");
+                document.getElementById( "user_list" ).innerHTML = "";
+                document.getElementById( "chat_stream" ).innerHTML = "";
+                for ( let i in users_dict ){
+                    console.log("00f");
+                    let line = document.createElement( "a" );
+                    let line_text = document.createTextNode( users_dict[i] + ", " );
+                    line.appendChild( line_text );
+                    document.getElementById( "user_list" ).appendChild( line );
+                }
+                console.log("00g");
+                if( data.length < 20 ) {
+                    length = data.length;
+                    console.log("00h");
+                } else {
+                    length = 20;
+                    console.log("00i");
+                }
+                for ( let i = data.length-length; i < data.length; i++ ){
+                    console.log("00j");
+                    let line = document.createElement( "p" );
+                    let line_text = document.createTextNode( data[i].name + ": " + data[i].message );
+                    line.appendChild( line_text );
+                    document.getElementById( "chat_stream" ).appendChild( line );
+                }
+            } )
+        })
+    </script>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <style>
+        .box1 {
+            border: 2px solid black;
+            border-radius: 10px;
+            overflow-y: scroll;
+            height: 300px;
+        }
+        .container {
+            border-radius: 10px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container #fafafa grey lighten-5">
+        <div class="row">
+            <div>
+                <h1>Live Chat<i class="small material-icons">chat</i></h1>
+            </div>
+        </div>
+        <div class="row"><div id="user_list"></div></div>
+        <div class="row box1">
+            <div id="chat_stream"></div>
+        </div>
+        <div class="row">
+            <div class="col s12 m9">
+                <label for="message" id="message_label"></label>
+                <input id="message" type="text">
+            </div>
+            <div class="col s12 m3">
+            <form>
+                <button class="waves-effect waves-light btn-large right" type="submit">
+                    <span>Send</span>
+                    <i class="material-icons right">send</i>
+                </button>
+            </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
